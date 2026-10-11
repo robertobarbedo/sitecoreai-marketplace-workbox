@@ -372,6 +372,10 @@ export function SettingsPage({
           </SettingsSection>
         </TabsContent>
       </Tabs>
+
+      <p className="text-left text-[10px] text-text-subtle">
+        Developed by Roberto Barbedo
+      </p>
     </div>
   );
 }
