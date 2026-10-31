@@ -1,0 +1,28 @@
+# Data usage disclosure
+
+Workbox is a Full Screen app that runs inside SitecoreAI and lists the items
+waiting in workflow in the environment it was opened from. It runs entirely
+in the browser: every read and change goes through the Sitecore Marketplace
+SDK with the signed-in user's own permissions. It has no API routes, no
+database and no server-side logic, and uses no analytics. It writes to the
+customer's own SitecoreAI environment only when a user runs a workflow
+command, an item is published, or an administrator saves the settings.
+Hosting: Vercel; serverless functions run in the United States (Vercel
+default region `iad1`, Washington, D.C.) unless the deployment sets another
+region. This app only serves static files from Vercel.
+
+See also the [Privacy policy](PRIVACY.md) and [Security policy](SECURITY.md).
+
+| Data type | Source | Purpose | Retention | Storage region | Access | Protection | Your rights (DSAR) | Deletion |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Sitecore content and metadata (item names, display names, paths, IDs, templates, languages, versions, field values, layout data, workflow state, `__Updated` / `__Updated by`, workflow definitions, site list and host names) | Your SitecoreAI environment: Authoring GraphQL API (`search` on `sitecore_master_index`, `item`, `workflow`) and the sites list, via the Marketplace SDK | List items per workflow and state, show item details, build View Live / Preview links | Not stored; held in browser memory while the app is open | Not stored by the app; stays in your SitecoreAI environment's region | The signed-in user, limited by their own SitecoreAI permissions | In transit: TLS 1.2+ and HSTS; requests proxied by the SitecoreAI host with the user's token; the app never sees credentials | Governed by your Sitecore agreement; the publisher holds no copy | Nothing to delete; closing the app discards it |
+| Signed-in user's email address | SitecoreAI host (`host.user` query) | Match `__Updated by` for the "Only my items" filter | Not stored; held in browser memory while the app is open | Not stored by the app | The signed-in user's browser only | Never sent to the app's servers or any third party | Held by Sitecore under your agreement; the publisher holds no copy | Nothing to delete; closing the app discards it |
+| Workflow command comments and command executions | User input (comment typed in the command dialog) and the command the user runs | Execute the workflow command on the item as the user (`executeWorkflowCommand`) | Stored by Sitecore in the item's workflow history (item, old and new state, comment, user, time) for as long as your environment keeps it | Your SitecoreAI environment's region | Users who can view the item's workflow history in SitecoreAI | Executed with the user's own SitecoreAI permissions; GraphQL values escaped; TLS 1.2+ and HSTS; at rest: Sitecore's encryption under your agreement | Governed by your Sitecore agreement; contact your SitecoreAI administrator; the publisher holds no copy | Managed in your environment as part of the item's workflow history; the app cannot delete it |
+| Publish requests (item, language) | Generated when a command moves an item into a final state and automatic publishing is on | Smart-publish the item to Experience Edge | Publish operations are kept by Sitecore; the published content lives in Experience Edge | Your SitecoreAI environment's region | Users and systems with access to your environment and Experience Edge | Executed with the user's own publish rights; TLS 1.2+ and HSTS | Governed by your Sitecore agreement | Unpublish or delete the item in your environment |
+| Admin settings (allowed sites, languages and workflows; toolbar visibility; page display mode; data source cascade; forced "Only my items"; dedicated Preview URL; automatic publish) | Entered by an administrator in the app's settings page | Restrict and configure what the app offers to everyone in the environment | Until the item is deleted | Your SitecoreAI environment's region, item `/sitecore/system/Modules/Marketplace/Workbox/Settings` (JSON in the `Value` field) | Everyone who uses the app in the environment can read it; saving needs write access under `/sitecore/system/Modules` | Written with the user's own permissions; at rest: Sitecore's encryption under your agreement; contains no personal data or secrets | Governed by your Sitecore agreement | Delete the `/sitecore/system/Modules/Marketplace/Workbox` folder (uninstalling the app does not remove it) |
+| View preferences (`localStorage` key `sitecoreai-workbox-prefs`: scope ID, language, rows per page, "Show final states", "Only my items", "Show only pages") | Chosen by the user in the toolbar | Restore the user's view next time | Until site data is cleared | Browser `localStorage` on the user's device | The user's browser only | Stays on the device; contains no content or personal data | Held only on your device; the publisher keeps no copy | Clear site data for the app in the browser |
+| Hosting request metadata (IP address, time, path, user agent of requests for the app's pages and files) | Recorded by the hosting provider when the browser loads the app | Serve the app, operate and secure the deployment | 90 days at most | Vercel (US) | The publisher (app maintainer) and the hosting provider | In transit: TLS 1.2+ and HSTS; at rest: provider encryption; contains no content, tokens or secrets | Email rb205@proton.me, answered within 30 days; the publisher keeps no personal data beyond these logs | Automatic within 90 days, or sooner on a verified request where the provider allows it |
+
+## AI usage
+
+This app does not use AI or machine learning.

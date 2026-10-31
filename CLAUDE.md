@@ -81,6 +81,26 @@ local:
 `getItemFull` also passes `version` inside `item(where:)`; the same
 `ItemQueryInput` assumption applies.
 
+### SDK 0.2 → 0.4 upgrade (also not verified live)
+
+`@sitecore-marketplace-sdk/client` went 0.2.2 → 0.4.1 and `xmc` 0.2.2 → 0.4.4
+(core 0.2.2 → 0.3.5). It compiled with no code changes (same `ClientSDK.init`
+config, same `query` / `mutate` signatures, same 30 s default timeout), but
+QA these inside SitecoreAI:
+
+- `xmc.xmapp.listSites` (`listSites`) is now **deprecated** in favour of
+  `xmc.sites.listSites` ("will be removed in later version"). Kept as is so
+  the response shape (`properties.rootPath`, `hosts[].targetHostname`,
+  `thumbnail.url` → CM host) does not change silently; switching means
+  re-checking those fields against the new endpoint.
+- `xmc.authoring.graphql`: the response is still read as
+  `response.data.data` / `response.data.errors` through a cast; if the newer
+  SDK wraps it differently, every authoring call fails with
+  "Empty GraphQL response".
+- `application.context` (`resourceAccess[0].context.preview/live`,
+  `tenantDisplayName`) and `host.user` (`email`) are read through casts too —
+  confirm the environment label and "Only my items" still work.
+
 ## Invariants worth keeping
 
 - All authoring calls go through `runAuthoring` (`sitecore-graphql.ts`), which
@@ -146,6 +166,19 @@ local:
   `workflow-center`); UI primitives in `components/ui/*` copied from
   `content-transfer-api-console`, except `checkbox.tsx` which is a native input
   (a table page renders hundreds of them).
+- Marketplace SDK: `@sitecore-marketplace-sdk/client` ^0.4.1 +
+  `@sitecore-marketplace-sdk/xmc` ^0.4.4.
+- Fonts: Inter and JetBrains Mono are self-hosted via `next/font/google` in
+  `layout.tsx` (CSS variables `--font-inter` / `--font-jetbrains-mono`, used
+  first in `--font-family-sans` / `--font-family-mono` in `globals.css`). No
+  Google Fonts `<link>` — no visitor request reaches Google. Note the
+  `font-sans` / `font-mono` utilities resolve Tailwind's `--font-sans` /
+  `--font-mono`, not these variables (pre-existing; left unchanged).
+- No analytics. No env vars except the optional `CSP_FRAME_ANCESTORS` read by
+  `next.config.ts` (security headers); there is no `.env.example`.
+- Public docs: `PRIVACY.md` and `DATA-USAGE.md` describe the data flows
+  (localStorage key `sitecoreai-workbox-prefs`, admin settings item, workflow
+  comments stored in item history by Sitecore) — update them if those change.
 - Styling follows `C:\Marketplace\STYLE-GUIDE.md`.
 - Dev port 5011.
 

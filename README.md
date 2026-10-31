@@ -157,7 +157,7 @@ Deployment URL in App Studio.
 
 | Variable | Required | Description |
 |---|---|---|
-| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | No | GA4 measurement ID (`G-XXXXXXXXXX`). Inlined at build time; leave empty to disable analytics. Not a secret. |
+| `CSP_FRAME_ANCESTORS` | No | Space-separated CSP sources allowed to embed the app (`Content-Security-Policy: frame-ancestors`). Default: `'self' https://*.sitecorecloud.io`. |
 
 The app only runs inside SitecoreAI: the Marketplace SDK needs the host
 iframe, so opening the deployment directly in a browser shows a "Could not
@@ -198,11 +198,20 @@ their own view.
 - **Data:** content and workflow data travel only between the browser and the
   SitecoreAI host; nothing is sent to the app's own server. Admin settings are
   written to the content tree; view preferences stay in `localStorage`.
-- **Analytics:** if `NEXT_PUBLIC_GA_MEASUREMENT_ID` is set, Google Analytics
-  receives page views and an event when the SDK client initializes, tagged
-  with the app name. No content data is sent.
+- **Workflow comments:** comments typed for a workflow command are sent to
+  your environment with the command and stored by Sitecore in the item's
+  workflow history, as with any workflow command run in SitecoreAI.
+- **No analytics or tracking.** Fonts are bundled with the app at build time,
+  so no request reaches Google or any other third party.
 - **Host restrictions:** not applicable; the app makes no outbound requests of
-  its own besides optional Google Analytics.
+  its own.
+- **Security headers:** HSTS, `Content-Security-Policy: frame-ancestors`
+  (only SitecoreAI may embed the app; see `CSP_FRAME_ANCESTORS`),
+  `X-Content-Type-Options`, `Referrer-Policy` and `Permissions-Policy`.
+- **Policies:** [Privacy policy](PRIVACY.md),
+  [Terms of service](TERMS.md),
+  [Data usage disclosure](DATA-USAGE.md) and
+  [Security policy](SECURITY.md).
 
 ## Limitations
 
@@ -239,7 +248,11 @@ their own view.
 
 ## Support
 
-Report bugs and request features by opening an issue in this repository.
+Report bugs and request features in
+[GitHub Issues](https://github.com/robertobarbedo/sitecoreai-marketplace-workbox/issues).
+Report security problems privately as described in the
+[Security policy](SECURITY.md). See also the [Privacy policy](PRIVACY.md),
+[Terms of service](TERMS.md) and [Data usage disclosure](DATA-USAGE.md).
 This is a community app and is not an official Sitecore product.
 
 ## License
