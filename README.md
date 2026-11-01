@@ -139,7 +139,7 @@ sources that other pages may use.
 5. Permissions: **Copy and Read from Clipboard** (used by the "Copy item ID"
    and "Copy path" buttons).
 6. Deployment URL: `https://<your-deployment>/`.
-7. App logo: [`public/icon.svg`](public/icon.svg).
+7. App logo: [`public/tray-arrow-down-duotone.svg`](public/tray-arrow-down-duotone.svg).
 8. No custom authorization is needed.
 9. **My apps** → **Install** into the target environment, then open Workbox
    from the environment's app menu.
