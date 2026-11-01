@@ -1,7 +1,7 @@
 # Marketplace submission: Workbox
 
 Copy-paste text for Sitecore's public-app submission form, in form order.
-Replace every `{{...}}` placeholder before submitting.
+Replace `{{APP_URL}}` with the production deployment URL before submitting.
 
 ## 1. App name
 
@@ -66,7 +66,7 @@ PNG, shown as 600×900 thumbnails. Capture during live QA on an environment with
 
 ## 8. Data usage disclosure
 
-Paste from `DATA-USAGE.md` (replace `rb205@proton.me` in it first).
+Paste from `DATA-USAGE.md`.
 
 Summary: the app is client-side only. Content and workflow data travel only between the browser and the SitecoreAI host through the Marketplace SDK, with the user's own permissions, and nothing reaches the app's server. Workflow comments are stored by Sitecore in the item's workflow history, admin settings in one item in the customer's content tree, and view preferences in the browser's localStorage; the hosting provider keeps request logs for at most 90 days.
 
@@ -110,4 +110,4 @@ Next.js lists sharp (LGPL-3.0 libvips) as an optional dependency for image optim
 - [ ] Live QA: admin settings save and restrict the toolbar
 - [ ] Clipboard permission selected in App Studio
 - [ ] Screenshots captured (PNG)
-- [ ] `rb205@proton.me` replaced in DATA-USAGE.md, PRIVACY.md, TERMS.md, SECURITY.md; `Roberto Barbedo`, `rb205@proton.me`, `{{APP_URL}}` replaced in this form
+- [ ] `{{APP_URL}}` replaced with the production deployment URL in this form
