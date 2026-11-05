@@ -127,7 +127,7 @@ Depending on where you live (for example under the GDPR or CCPA), you may
 have the right to access, correct, delete, restrict or object to the
 processing of your personal data, and to receive a copy of it.
 
-To make a request, email rb205@proton.me with the subject "Data request".
+To make a request, email roberto.barbedo@msqdx.com with the subject "Data request".
 We answer within 30 days. The publisher holds no personal data beyond the
 hosting provider's request metadata described above. Data in your SitecoreAI
 environment, including workflow comments and history, is held by your
@@ -153,5 +153,5 @@ file and reflected in the "Last updated" date at the top.
 
 ## Contact
 
-Questions about this policy: email rb205@proton.me or open an issue at
+Questions about this policy: email roberto.barbedo@msqdx.com or open an issue at
 https://github.com/robertobarbedo/sitecoreai-marketplace-workbox/issues.
