@@ -44,19 +44,102 @@ type AuthoringResponse<T> = Record<string, unknown> & {
   };
 };
 
+/** Waits between attempts of a read that came back with no payload at all. */
+const EMPTY_RESPONSE_RETRY_DELAYS_MS = [600, 1500];
+
+/**
+ * Best-effort text for a transport-level failure. The SDK resolves (it does not
+ * throw) on a failed HTTP call, with `data: undefined` and the failure in
+ * `error` — whose shape depends on what the gateway answered.
+ */
+function describeTransportError(response: unknown): string {
+  const error = (response as { error?: unknown } | null | undefined)?.error;
+  if (error === undefined || error === null || error === "") return "";
+  if (typeof error === "string") return error;
+  if (error instanceof Error) return error.message;
+  if (typeof error === "object") {
+    const record = error as Record<string, unknown>;
+    for (const key of ["message", "detail", "title", "error"]) {
+      const value = record[key];
+      if (typeof value === "string" && value) return value;
+    }
+    try {
+      const json = JSON.stringify(error);
+      if (json && json !== "{}") return json.slice(0, 300);
+    } catch {
+      // Not serializable — fall through to the generic message.
+    }
+  }
+  return "";
+}
+
+/**
+ * The one place that talks to the authoring endpoint.
+ *
+ * A response with neither `data` nor GraphQL `errors` is a transport failure,
+ * not an answer. It shows up on the first calls after the app opens (the
+ * environment's authoring host / search index is still warming up) and clears on
+ * its own, so reads are retried a couple of times before giving up. Mutations
+ * are never retried: a workflow command or a publish may have gone through even
+ * though the response was lost.
+ */
+async function requestAuthoring<T>(
+  client: ClientSDK,
+  sitecoreContextId: string,
+  query: string,
+): Promise<{ payload: AuthoringResponse<T>["data"]; transportError: string }> {
+  const retryDelays = /^\s*mutation\b/.test(query)
+    ? []
+    : EMPTY_RESPONSE_RETRY_DELAYS_MS;
+
+  for (let attempt = 0; ; attempt += 1) {
+    let response: unknown;
+    let thrown: unknown;
+    try {
+      response = await client.mutate("xmc.authoring.graphql", {
+        params: {
+          query: { sitecoreContextId },
+          body: { query },
+        },
+      });
+    } catch (error) {
+      thrown = error;
+    }
+
+    const payload = (response as AuthoringResponse<T> | undefined)?.data;
+    const answered =
+      Boolean(payload?.errors?.length) ||
+      (payload?.data !== undefined && payload?.data !== null);
+
+    if (answered) return { payload, transportError: "" };
+
+    if (attempt >= retryDelays.length) {
+      if (thrown) throw thrown;
+      return { payload, transportError: describeTransportError(response) };
+    }
+    await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt]));
+  }
+}
+
+function emptyResponseError(transportError: string): Error {
+  return new Error(
+    transportError
+      ? `Empty GraphQL response (${transportError})`
+      : "Empty GraphQL response",
+  );
+}
+
 export async function runAuthoring<T>(
   client: ClientSDK,
   sitecoreContextId: string,
   query: string,
 ): Promise<T> {
-  const response = await client.mutate("xmc.authoring.graphql", {
-    params: {
-      query: { sitecoreContextId },
-      body: { query },
-    },
-  });
+  const { payload, transportError } = await requestAuthoring<T>(
+    client,
+    sitecoreContextId,
+    query,
+  );
 
-  const payload = (response as AuthoringResponse<T>).data;
   if (payload?.errors?.length) {
     throw new Error(
       payload.errors
@@ -65,7 +148,7 @@ export async function runAuthoring<T>(
     );
   }
   if (payload?.data === undefined || payload?.data === null) {
-    throw new Error("Empty GraphQL response");
+    throw emptyResponseError(transportError);
   }
   return payload.data;
 }
@@ -84,14 +167,12 @@ export async function runAuthoringPartial<T>(
   sitecoreContextId: string,
   query: string,
 ): Promise<T> {
-  const response = await client.mutate("xmc.authoring.graphql", {
-    params: {
-      query: { sitecoreContextId },
-      body: { query },
-    },
-  });
+  const { payload, transportError } = await requestAuthoring<T>(
+    client,
+    sitecoreContextId,
+    query,
+  );
 
-  const payload = (response as AuthoringResponse<T>).data;
   if (payload?.data !== undefined && payload?.data !== null) {
     return payload.data;
   }
@@ -102,7 +183,7 @@ export async function runAuthoringPartial<T>(
         .join("; "),
     );
   }
-  throw new Error("Empty GraphQL response");
+  throw emptyResponseError(transportError);
 }
 
 /* ------------------------------------------------------------------ context */

@@ -104,7 +104,12 @@ QA these inside SitecoreAI:
 ## Invariants worth keeping
 
 - All authoring calls go through `runAuthoring` (`sitecore-graphql.ts`), which
-  throws on `errors[]` and on an empty `data`. Queries are string-interpolated —
+  throws on `errors[]` and on an empty `data`. A response with neither is a
+  transport failure (the SDK resolves with `data: undefined` + `error`); it
+  happens on the first calls after the app opens, so `requestAuthoring` retries
+  **queries** twice (600 ms, 1.5 s) and appends the transport error to the
+  message. Mutations are never retried — a command or publish may have gone
+  through. Queries are string-interpolated —
   the SDK passthrough takes no GraphQL variables — so every interpolated value
   goes through `escapeGraphQL` first. Exception: the scan's search uses
   `runAuthoringPartial`, which keeps the data when field-level errors are

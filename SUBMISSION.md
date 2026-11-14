@@ -9,9 +9,9 @@ Workbox
 
 ## 2. Headline
 
-<!-- 376 chars -->
+<!-- 114 chars -->
 
-Bring the classic Sitecore Workbox back to SitecoreAI. See every item waiting in workflow, grouped by workflow and state with live counts, filter to your own items or to pages, and run Submit, Approve, Reject or any workflow command on one item or a whole selection, with pages grouped with their data sources and optional automatic publish to Experience Edge on final states.
+Bring the classic Workbox back to SitecoreAI: see everything waiting in workflow and approve or reject it in bulk.
 
 ## 3. Description
 
