@@ -29,11 +29,17 @@ empty comment. When items reach a final state they are auto-published to
 Experience Edge if the `autoPublish` admin setting is on (default) — there is
 no publish prompt either way.
 
-**Full Screen** extension point, so it is installed per environment and always
-acts on the environment it was opened from —
-`getEnvironmentContext()` takes `resourceAccess[0]`, matching the
-`experience-edge-admin-console` convention (the standalone apps, by contrast,
-list every tenant and let the user pick).
+Extension points: **Full Screen** (inside an environment) and **Standalone**
+(from the Cloud Portal). `readEnvironments` (`src/utils/environment.ts`) lists
+`resourceAccess`: one entry means the app just uses it and shows no selector;
+several mean the quiet "ENVIRONMENT name" line above everything
+(`components/workbox/environment-picker.tsx`) is shown. First open with several
+and none remembered shows "Choose an environment". The pick is stored in
+`localStorage` (`sitecoreai-workbox-prefs-environment`) and switching
+**reloads the app** (`switchEnvironment`), so no state of the previous
+environment survives. Both files are shared with Dictionary and Redirect
+Manager — keep the copies identical. NOT verified live: that Full Screen
+reports exactly one `resourceAccess` entry and Standalone reports them all.
 
 ## The core design constraint
 

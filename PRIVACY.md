@@ -76,6 +76,7 @@ The app does not sell or share data with anyone else.
 | Workflow command results and comments (workflow history entries: item, old and new state, comment, user, time) | Your SitecoreAI environment, written by Sitecore | Governed by your Sitecore agreement and environment |
 | Admin settings (JSON) | Your SitecoreAI environment, item `/sitecore/system/Modules/Marketplace/Workbox/Settings` | Until the item is deleted |
 | View preferences (`sitecoreai-workbox-prefs`: scope ID, language, rows per page, "Show final states", "Only my items", "Show only pages") | Your browser's `localStorage` | Until you clear site data for the app |
+| Selected environment (`sitecoreai-workbox-prefs-environment`: the ID of the environment you picked; only when the app is opened from the Standalone extension point with several environments) | Your browser's `localStorage` | Until you clear site data for the app |
 | Standard request metadata recorded by the hosting provider (IP address, time, path, user agent) | Vercel | 90 days at most |
 
 The app has no server log of its own: it has no API routes, so no content,
@@ -104,9 +105,12 @@ tokens, secrets or user identifiers reach the app's servers.
 
 ## Local storage
 
-The app keeps one `localStorage` entry, `sitecoreai-workbox-prefs`, holding
+The app keeps the `localStorage` entry `sitecoreai-workbox-prefs`, holding
 your view preferences (selected scope ID, language, rows per page and the
-"Show final states", "Only my items" and "Show only pages" toggles). It
+"Show final states", "Only my items" and "Show only pages" toggles). When it
+is opened from the Standalone extension point and several environments are
+available, it also keeps `sitecoreai-workbox-prefs-environment`, the ID of
+the environment you picked. It
 contains no content and no personal data, stays on your device and is never
 sent anywhere. You can clear it by clearing your browser data for the app.
 

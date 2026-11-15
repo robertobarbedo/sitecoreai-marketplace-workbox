@@ -53,3 +53,6 @@ export const SETTINGS_PATHS = {
 export const MARKETPLACE_FOLDER_NAME = "Marketplace";
 export const MODULE_FOLDER_NAME = "Workbox";
 export const SETTINGS_ITEM_NAME = "Settings";
+
+/** localStorage key of the environment picked when the host offers several. */
+export const ENVIRONMENT_STORAGE_KEY = `${PREFS_STORAGE_KEY}-environment`;

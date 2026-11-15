@@ -26,6 +26,7 @@ import {
   CONTENT_ROOT,
   DEFAULT_LANGUAGE,
   DEFAULT_ROW_PAGE_SIZE,
+  ENVIRONMENT_STORAGE_KEY,
 } from "@/src/constants";
 import type {
   CommandRunResult,
@@ -37,6 +38,16 @@ import type {
 } from "@/src/types/workbox";
 import { idKey } from "@/src/utils/format";
 import { expandWithDatasources } from "@/src/utils/grouping";
+import {
+  pickEnvironment,
+  readEnvironments,
+  switchEnvironment,
+  type EnvironmentOption,
+} from "@/src/utils/environment";
+import {
+  EnvironmentBar,
+  EnvironmentChooser,
+} from "@/components/workbox/environment-picker";
 import { loadPrefs, savePrefs } from "@/src/utils/prefs";
 import {
   DEFAULT_WORKBOX_SETTINGS,
@@ -45,7 +56,6 @@ import {
 } from "@/src/utils/settings";
 import {
   executeWorkflowCommand,
-  getEnvironmentContext,
   getHostUserEmail,
   getStateCommands,
   listLanguages,
@@ -74,6 +84,7 @@ interface ToastState {
 export default function FullScreenExtension() {
   const { client, error: sdkError, isInitialized } = useMarketplaceClient();
 
+  const [environments, setEnvironments] = useState<EnvironmentOption[]>([]);
   const [env, setEnv] = useState<EnvironmentContext | null>(null);
   const [booting, setBooting] = useState(true);
   const [bootError, setBootError] = useState<string | null>(null);
@@ -150,13 +161,21 @@ export default function FullScreenExtension() {
 
     (async () => {
       try {
-        const context = await getEnvironmentContext(client);
+        const contextResponse = await client.query("application.context");
         if (!active) return;
 
+        // One environment (Full Screen): use it. Several (Standalone): the
+        // one picked last time, otherwise the chooser is shown.
+        const available = readEnvironments(contextResponse.data);
+        setEnvironments(available);
+        const context = pickEnvironment(available, ENVIRONMENT_STORAGE_KEY);
+
         if (!context) {
-          setBootError(
-            "This app could not read an environment from the Marketplace host.",
-          );
+          if (available.length === 0) {
+            setBootError(
+              "This app could not read an environment from the Marketplace host.",
+            );
+          }
           setBooting(false);
           return;
         }
@@ -849,6 +868,22 @@ export default function FullScreenExtension() {
     );
   }
 
+  const chooseEnvironment = (next: EnvironmentOption) =>
+    switchEnvironment(next, ENVIRONMENT_STORAGE_KEY);
+
+  if (!bootError && !env && environments.length > 1) {
+    return (
+      <main className="min-h-screen bg-surface-bright p-(--spacing-margin-page)">
+        <div className="mx-auto max-w-[1280px]">
+          <EnvironmentChooser
+            environments={environments}
+            onSelect={chooseEnvironment}
+          />
+        </div>
+      </main>
+    );
+  }
+
   if (bootError || !env) {
     return (
       <main className="min-h-screen bg-surface-bright p-(--spacing-margin-page)">
@@ -871,6 +906,19 @@ export default function FullScreenExtension() {
     <ToastProvider swipeDirection="right">
       <main className="min-h-screen bg-surface-bright p-(--spacing-margin-page)">
         <div className="mx-auto max-w-[1280px] space-y-5">
+          {(() => {
+            const current = environments.find(
+              (item) => item.contextId === env.contextId,
+            );
+            return current ? (
+              <EnvironmentBar
+                environments={environments}
+                selected={current}
+                disabled={isRunning || isSavingSettings}
+                onSelect={chooseEnvironment}
+              />
+            ) : null;
+          })()}
           {showSettings ? (
             <SettingsPage
               scopes={scopes}
